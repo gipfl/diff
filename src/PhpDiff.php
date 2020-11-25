@@ -2,6 +2,7 @@
 
 namespace gipfl\Diff;
 
+use gipfl\Diff\PhpDiff\OpCodeHelper;
 use gipfl\Diff\PhpDiff\Renderer\AbstractRenderer;
 use gipfl\Diff\PhpDiff\SequenceMatcher;
 
@@ -133,7 +134,11 @@ class PhpDiff
         }
 
         $sequenceMatcher = new SequenceMatcher($this->a, $this->b, null, $this->options);
-        $this->groupedCodes = $sequenceMatcher->getGroupedOpcodes($this->options['context']);
+        $this->groupedCodes = OpCodeHelper::getGroupedOpcodes(
+            $sequenceMatcher->getOpcodes(),
+            $this->options['context']
+        );
+
         return $this->groupedCodes;
     }
 }
