@@ -43,6 +43,12 @@ class SequenceMatcher
         'ignoreCase' => false
     ];
 
+    /** @var array|null */
+    private $matchingBlocks;
+
+    /** @var array|null */
+    private $opCodes;
+
     /**
      * The constructor. With the sequences being passed, they'll be set for the
      * sequence matcher and it will perform a basic cleanup & calculate junk
@@ -418,6 +424,15 @@ class SequenceMatcher
         return $this->matchingBlocks;
     }
 
+    public function getOpcodes()
+    {
+        if ($this->opCodes === null) {
+            $this->opCodes = $this->calculateOpCodes();
+        }
+
+        return $this->opCodes;
+    }
+
     /**
      * Return a list of all of the opcodes for the differences between the
      * two strings.
@@ -440,15 +455,11 @@ class SequenceMatcher
      *
      * @return array Array of the opcodes describing the differences between the strings.
      */
-    public function getOpCodes()
+    public function calculateOpCodes()
     {
-        if (!empty($this->opCodes)) {
-            return $this->opCodes;
-        }
-
         $i = 0;
         $j = 0;
-        $this->opCodes = [];
+        $opCodes = [];
 
         $blocks = $this->getMatchingBlocks();
         foreach ($blocks as $block) {
@@ -463,30 +474,18 @@ class SequenceMatcher
             }
 
             if ($tag) {
-                $this->opCodes[] = [
-                    $tag,
-                    $i,
-                    $ai,
-                    $j,
-                    $bj
-                ];
+                $opCodes[] = [$tag, $i, $ai, $j, $bj];
             }
 
             $i = $ai + $size;
             $j = $bj + $size;
 
             if ($size) {
-                $this->opCodes[] = [
-                    'equal',
-                    $ai,
-                    $i,
-                    $bj,
-                    $j
-                ];
+                $opCodes[] = ['equal', $ai, $i, $bj, $j];
             }
         }
 
-        return $this->opCodes;
+        return $opCodes;
     }
 
     /**
