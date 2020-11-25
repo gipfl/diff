@@ -112,12 +112,12 @@ class ArrayRenderer extends AbstractRenderer
     {
         $start = 0;
         $limit = min(strlen($fromLine), strlen($toLine));
-        while ($start < $limit && $fromLine[$start] == $toLine[$start]) {
+        while ($start < $limit && $fromLine[$start] === $toLine[$start]) {
             ++$start;
         }
         $end = -1;
-        $limit = $limit - $start;
-        while (-$end <= $limit && substr($fromLine, $end, 1) === substr($toLine, $end, 1)) {
+        $limit -= $start;
+        while (-$end <= $limit && $fromLine[$end] === $toLine[$end]) {
             --$end;
         }
         return [

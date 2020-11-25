@@ -219,7 +219,8 @@ class SequenceMatcher
             foreach ($jDict as $jKey => $j) {
                 if ($j < $blo) {
                     continue;
-                } elseif ($j >= $bhi) {
+                }
+                if ($j >= $bhi) {
                     break;
                 }
 
@@ -300,11 +301,7 @@ class SequenceMatcher
             $lineB = strtolower($lineB);
         }
 
-        if ($lineA !== $lineB) {
-            return true;
-        }
-
-        return false;
+        return $lineA !== $lineB;
     }
 
     /**
@@ -370,7 +367,7 @@ class SequenceMatcher
         $nonAdjacent = [];
         foreach ($matchingBlocks as $block) {
             list($i2, $j2, $k2) = $block;
-            if ($i1 + $k1 == $i2 && $j1 + $k1 == $j2) {
+            if ($i1 + $k1 === $i2 && $j1 + $k1 === $j2) {
                 $k1 += $k2;
             } else {
                 if ($k1) {
