@@ -49,9 +49,9 @@ class Inline extends ArrayRenderer
                         $fromLine = $change['base']['offset'] + $no + 1;
                         $toLine = $change['changed']['offset'] + $no + 1;
                         $html .= '<tr>';
-                        $html .= '<th>'.$fromLine.'</th>';
-                        $html .= '<th>'.$toLine.'</th>';
-                        $html .= '<td class="Left">'.$line.'</td>';
+                        $html .= '<th>' . $fromLine . '</th>';
+                        $html .= '<th>' . $toLine . '</th>';
+                        $html .= '<td class="Left">' . $line . '</td>';
                         $html .= '</tr>';
                     }
                 } elseif ($change['tag'] === 'insert') {
@@ -60,8 +60,8 @@ class Inline extends ArrayRenderer
                         $toLine = $change['changed']['offset'] + $no + 1;
                         $html .= '<tr>';
                         $html .= '<th>&nbsp;</th>';
-                        $html .= '<th>'.$toLine.'</th>';
-                        $html .= '<td class="Right"><ins>'.$line.'</ins>&nbsp;</td>';
+                        $html .= '<th>' . $toLine . '</th>';
+                        $html .= '<td class="Right"><ins>' . $line . '</ins>&nbsp;</td>';
                         $html .= '</tr>';
                     }
                 } elseif ($change['tag'] === 'delete') {
@@ -69,9 +69,9 @@ class Inline extends ArrayRenderer
                     foreach ($change['base']['lines'] as $no => $line) {
                         $fromLine = $change['base']['offset'] + $no + 1;
                         $html .= '<tr>';
-                        $html .= '<th>'.$fromLine.'</th>';
+                        $html .= '<th>' . $fromLine . '</th>';
                         $html .= '<th>&nbsp;</th>';
-                        $html .= '<td class="Left"><del>'.$line.'</del>&nbsp;</td>';
+                        $html .= '<td class="Left"><del>' . $line . '</del>&nbsp;</td>';
                         $html .= '</tr>';
                     }
                 } elseif ($change['tag'] === 'replace') {
@@ -79,9 +79,9 @@ class Inline extends ArrayRenderer
                     foreach ($change['base']['lines'] as $no => $line) {
                         $fromLine = $change['base']['offset'] + $no + 1;
                         $html .= '<tr>';
-                        $html .= '<th>'.$fromLine.'</th>';
+                        $html .= '<th>' . $fromLine . '</th>';
                         $html .= '<th>&nbsp;</th>';
-                        $html .= '<td class="Left"><span>'.$line.'</span></td>';
+                        $html .= '<td class="Left"><span>' . $line . '</span></td>';
                         $html .= '</tr>';
                     }
 
@@ -89,8 +89,8 @@ class Inline extends ArrayRenderer
                         $toLine = $change['changed']['offset'] + $no + 1;
                         $html .= '<tr>';
                         $html .= '<th>&nbsp;</th>';
-                        $html .= '<th>'.$toLine.'</th>';
-                        $html .= '<td class="Right"><span>'.$line.'</span></td>';
+                        $html .= '<th>' . $toLine . '</th>';
+                        $html .= '<td class="Right"><span>' . $line . '</span></td>';
                         $html .= '</tr>';
                     }
                 }
