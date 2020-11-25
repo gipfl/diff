@@ -174,7 +174,7 @@ class SequenceMatcher
      */
     private function isBJunk($b)
     {
-        if (isset($this->juncDict[$b])) {
+        if (isset($this->junkDict[$b])) {
             return true;
         }
 
@@ -256,7 +256,7 @@ class SequenceMatcher
         while ($bestI > $alo
             && $bestJ > $blo
             && $this->isBJunk($b[$bestJ - 1])
-            && !$this->isLineDifferent($bestI - 1, $bestJ - 1)
+            && !$this->linesAreDifferent($bestI - 1, $bestJ - 1)
         ) {
             --$bestI;
             --$bestJ;
