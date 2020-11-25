@@ -92,7 +92,7 @@ class SequenceMatcher
             return;
         }
 
-        $this->a= $a;
+        $this->a = $a;
         $this->matchingBlocks = null;
         $this->opCodes = null;
     }
@@ -117,6 +117,22 @@ class SequenceMatcher
         $this->opCodes = null;
         $this->fullBCount = null;
         $this->chainB();
+    }
+
+    /**
+     * @return array
+     */
+    public function getA()
+    {
+        return $this->a;
+    }
+
+    /**
+     * @return array
+     */
+    public function getB()
+    {
+        return $this->b;
     }
 
     /**
@@ -556,124 +572,6 @@ class SequenceMatcher
         }
 
         return $groups;
-    }
-
-    /**
-     * Return a measure of the similarity between the two sequences.
-     * This will be a float value between 0 and 1.
-     *
-     * Out of all of the ratio calculation functions, this is the most
-     * expensive to call if getMatchingBlocks or getOpCodes is yet to be
-     * called. The other calculation methods (quickRatio and realquickRatio)
-     * can be used to perform quicker calculations but may be less accurate.
-     *
-     * The ratio is calculated as (2 * number of matches) / total number of
-     * elements in both sequences.
-     *
-     * @return float The calculated ratio.
-     */
-    public function Ratio()
-    {
-        $matches = array_reduce($this->getMatchingBlocks(), [$this, 'ratioReduce'], 0);
-        return $this->calculateRatio($matches, count($this->a) + count($this->b));
-    }
-
-    /**
-     * Helper function to calculate the number of matches for Ratio().
-     *
-     * @param int $sum The running total for the number of matches.
-     * @param array $triple Array containing the matching block triple to add to the running total.
-     * @return int The new running total for the number of matches.
-     */
-    private function ratioReduce($sum, $triple)
-    {
-        return $sum + ($triple[count($triple) - 1]);
-    }
-
-    /**
-     * Quickly return an upper bound ratio for the similarity of the strings.
-     * This is quicker to compute than Ratio().
-     *
-     * @return float The calculated ratio.
-     */
-    private function quickRatio()
-    {
-        if ($this->fullBCount === null) {
-            $this->fullBCount = [];
-            $bLength = count($b);
-            for ($i = 0; $i < $bLength; ++$i) {
-                $char = $this->b[$i];
-                $this->fullBCount[$char] = $this->arrayGetDefault($this->fullBCount, $char, 0) + 1;
-            }
-        }
-
-        $avail = array();
-        $matches = 0;
-        $aLength = count($this->a);
-        for ($i = 0; $i < $aLength; ++$i) {
-            $char = $this->a[$i];
-            if (isset($avail[$char])) {
-                $numb = $avail[$char];
-            } else {
-                $numb = $this->arrayGetDefault($this->fullBCount, $char, 0);
-            }
-            $avail[$char] = $numb - 1;
-            if ($numb > 0) {
-                ++$matches;
-            }
-        }
-
-        $this->calculateRatio($matches, count($this->a) + count($this->b));
-    }
-
-    /**
-     * Return an upper bound ratio really quickly for the similarity of the strings.
-     * This is quicker to compute than Ratio() and quickRatio().
-     *
-     * @return float The calculated ratio.
-     */
-    private function realquickRatio()
-    {
-        $aLength = count($this->a);
-        $bLength = count($this->b);
-
-        return $this->calculateRatio(min($aLength, $bLength), $aLength + $bLength);
-    }
-
-    /**
-     * Helper function for calculating the ratio to measure similarity for the strings.
-     * The ratio is defined as being 2 * (number of matches / total length)
-     *
-     * @param int $matches The number of matches in the two strings.
-     * @param int $length The length of the two strings.
-     * @return float The calculated ratio.
-     */
-    private function calculateRatio($matches, $length = 0)
-    {
-        if ($length) {
-            return 2 * ($matches / $length);
-        }
-
-        return 1;
-    }
-
-    /**
-     * Helper function that provides the ability to return the value for a key
-     * in an array of it exists, or if it doesn't then return a default value.
-     * Essentially cleaner than doing a series of if(isset()) {} else {} calls.
-     *
-     * @param array $array The array to search.
-     * @param string $key The key to check that exists.
-     * @param mixed $default The value to return as the default value if the key doesn't exist.
-     * @return mixed The value from the array if the key exists or otherwise the default.
-     */
-    private function arrayGetDefault($array, $key, $default)
-    {
-        if (isset($array[$key])) {
-            return $array[$key];
-        }
-
-        return $default;
     }
 
     /**
