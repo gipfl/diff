@@ -2,6 +2,15 @@
 
 namespace gipfl\Diff\PhpDiff;
 
+use function array_merge;
+use function count;
+use function is_array;
+use function max;
+use function min;
+use function str_replace;
+use function str_split;
+use function strtolower;
+
 /**
  * Sequence matcher for Diff
  */
@@ -58,6 +67,7 @@ class SequenceMatcher
      * @param string|array $b A string or array containing the lines to compare.
      * @param string|array $junkCallback Either an array or string that references a callback
      *                     function (if there is one) to determine 'junk' characters.
+     * @param array $options
      */
     public function __construct($a, $b, $junkCallback = null, $options = [])
     {
@@ -98,9 +108,8 @@ class SequenceMatcher
             return;
         }
 
+        $this->resetCalculation();
         $this->a = $a;
-        $this->matchingBlocks = null;
-        $this->opCodes = null;
     }
 
     /**
@@ -118,11 +127,15 @@ class SequenceMatcher
             return;
         }
 
+        $this->resetCalculation();
         $this->b = $b;
+        $this->chainB();
+    }
+
+    protected function resetCalculation()
+    {
         $this->matchingBlocks = null;
         $this->opCodes = null;
-        $this->fullBCount = null;
-        $this->chainB();
     }
 
     /**
@@ -192,7 +205,8 @@ class SequenceMatcher
      * Checks if a particular character is in the junk dictionary
      * for the list of junk characters.
      *
-     * @return boolean $b True if the character is considered junk. False if not.
+     * @param $b
+     * @return boolean whether the character is considered junk
      */
     private function isBJunk($b)
     {
@@ -209,7 +223,7 @@ class SequenceMatcher
      * $alo - $ahi and for the second sequence, $blo - $bhi)
      *
      * Essentially, of all of the maximal matching blocks, return the one that
-     * startest earliest in $a, and all of those maximal matching blocks that
+     * starts earliest in $a, and all of those maximal matching blocks that
      * start earliest in $a, return the one that starts earliest in $b.
      *
      * If the junk callback is defined, do the above but with the restriction
@@ -293,11 +307,7 @@ class SequenceMatcher
             ++$bestSize;
         }
 
-        return [
-            $bestI,
-            $bestJ,
-            $bestSize
-        ];
+        return [$bestI, $bestJ, $bestSize];
     }
 
     /**
@@ -313,7 +323,7 @@ class SequenceMatcher
         $lineB = $this->b[$bIndex];
 
         if ($this->options['ignoreWhitespace']) {
-            $replace = array("\t", ' ');
+            $replace = ["\t", ' '];
             $lineA = str_replace($replace, '', $lineA);
             $lineB = str_replace($replace, '', $lineB);
         }
@@ -393,11 +403,7 @@ class SequenceMatcher
                 $k1 += $k2;
             } else {
                 if ($k1) {
-                    $nonAdjacent[] = [
-                        $i1,
-                        $j1,
-                        $k1
-                    ];
+                    $nonAdjacent[] = [$i1, $j1, $k1];
                 }
 
                 $i1 = $i2;
@@ -407,18 +413,10 @@ class SequenceMatcher
         }
 
         if ($k1) {
-            $nonAdjacent[] = [
-                $i1,
-                $j1,
-                $k1
-            ];
+            $nonAdjacent[] = [$i1, $j1, $k1];
         }
 
-        $nonAdjacent[] = [
-            $aLength,
-            $bLength,
-            0
-        ];
+        $nonAdjacent[] = [$aLength, $bLength, 0];
 
         $this->matchingBlocks = $nonAdjacent;
         return $this->matchingBlocks;
@@ -427,7 +425,7 @@ class SequenceMatcher
     public function getOpcodes()
     {
         if ($this->opCodes === null) {
-            $this->opCodes = $this->calculateOpCodes();
+            $this->opCodes = $this->calculateOpCodes($this->getMatchingBlocks());
         }
 
         return $this->opCodes;
@@ -453,17 +451,16 @@ class SequenceMatcher
      *           $i1 in $a.
      * equal  -  The two strings with the specified ranges are equal.
      *
+     * @param array $blocks
      * @return array Array of the opcodes describing the differences between the strings.
      */
-    public function calculateOpCodes()
+    public function calculateOpCodes(array $blocks)
     {
         $i = 0;
         $j = 0;
         $opCodes = [];
 
-        $blocks = $this->getMatchingBlocks();
-        foreach ($blocks as $block) {
-            list($ai, $bj, $size) = $block;
+        foreach ($blocks as list($ai, $bj, $size)) {
             $tag = '';
             if ($i < $ai && $j < $bj) {
                 $tag = 'replace';
