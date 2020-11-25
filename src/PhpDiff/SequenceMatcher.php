@@ -381,7 +381,7 @@ class SequenceMatcher
             }
         }
 
-        usort($matchingBlocks, [$this, 'tupleSort']);
+        usort($matchingBlocks, [ArrayHelper::class, 'tupleSort']);
 
         $i1 = 0;
         $j1 = 0;
@@ -571,34 +571,5 @@ class SequenceMatcher
         }
 
         return $groups;
-    }
-
-    /**
-     * Sort an array by the nested arrays it contains. Helper function for getMatchingBlocks
-     *
-     * @param array $a First array to compare.
-     * @param array $b Second array to compare.
-     * @return int -1, 0 or 1, as expected by the usort function.
-     */
-    private function tupleSort($a, $b)
-    {
-        $max = max(count($a), count($b));
-        for ($i = 0; $i < $max; ++$i) {
-            if ($a[$i] < $b[$i]) {
-                return -1;
-            }
-            if ($a[$i] > $b[$i]) {
-                return 1;
-            }
-        }
-
-        if (count($a) === count($b)) {
-            return 0;
-        }
-        if (count($a) < count($b)) {
-            return -1;
-        }
-
-        return 1;
     }
 }
