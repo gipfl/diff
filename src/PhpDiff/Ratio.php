@@ -20,6 +20,9 @@ class Ratio
     /** @var array */
     private $b;
 
+    /** @var array */
+    private $fullBCount;
+
     public function __construct(SequenceMatcher $matcher)
     {
         $this->matcher = $matcher;
