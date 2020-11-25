@@ -6,31 +6,31 @@ use gipfl\Diff\PhpDiff\OpCodeHelper;
 use gipfl\Diff\PhpDiff\Renderer\AbstractRenderer;
 use gipfl\Diff\PhpDiff\SequenceMatcher;
 
+/**
+ * Please do not use this directly, everything php-diff-related is still subject
+ * to heavy refactoring
+ *
+ * @internal
+ */
 class PhpDiff
 {
-    /**
-     * @var array The "old" sequence to use as the basis for the comparison.
-     */
-    private $a = null;
+    /** @var array The "old" sequence to use as the basis for the comparison */
+    private $a;
 
-    /**
-     * @var array The "new" sequence to generate the changes for.
-     */
-    private $b = null;
+    /** @var array The "new" sequence to generate the changes for */
+    private $b;
 
-    /**
-     * @var array Array containing the generated opcodes for the differences between the two items.
-     */
-    private $groupedCodes = null;
+    /** @var array contains the generated opcodes for the differences between the two items */
+    private $groupedCodes;
 
     /**
      * @var array Associative array of the default options available for the diff class and their default value.
      */
     private $defaultOptions = [
-        'context' => 3,
-        'ignoreNewLines' => false,
+        'context'          => 3,
+        'ignoreNewLines'   => false,
         'ignoreWhitespace' => false,
-        'ignoreCase' => false
+        'ignoreCase'       => false
     ];
 
     /**
@@ -129,16 +129,19 @@ class PhpDiff
      */
     public function getGroupedOpcodes()
     {
-        if (!is_null($this->groupedCodes)) {
-            return $this->groupedCodes;
+        if ($this->groupedCodes === null) {
+            $this->groupedCodes = $this->fetchGroupedOpCodes();
         }
 
-        $sequenceMatcher = new SequenceMatcher($this->a, $this->b, null, $this->options);
-        $this->groupedCodes = OpCodeHelper::getGroupedOpcodes(
-            $sequenceMatcher->getOpcodes(),
+        return $this->groupedCodes;
+    }
+
+    protected function fetchGroupedOpCodes()
+    {
+        $matcher = new SequenceMatcher($this->a, $this->b, null, $this->options);
+        return OpCodeHelper::getGroupedOpcodes(
+            $matcher->getOpcodes(),
             $this->options['context']
         );
-
-        return $this->groupedCodes;
     }
 }

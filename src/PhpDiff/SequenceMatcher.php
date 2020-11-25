@@ -164,8 +164,7 @@ class SequenceMatcher
         $this->b2j = [];
         $popularDict = [];
 
-        for ($i = 0; $i < $length; ++$i) {
-            $char = $this->b[$i];
+        foreach ($this->b as $i => $char) {
             if (isset($this->b2j[$char])) {
                 if ($length >= 200 && count($this->b2j[$char]) * 100 > $length) {
                     $popularDict[$char] = 1;

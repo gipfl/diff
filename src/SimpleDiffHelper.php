@@ -6,6 +6,9 @@ use gipfl\Diff\PhpDiff\Renderer\AbstractRenderer;
 use LogicException;
 use function explode;
 
+/**
+ * @internal
+ */
 trait SimpleDiffHelper
 {
     protected $left;
