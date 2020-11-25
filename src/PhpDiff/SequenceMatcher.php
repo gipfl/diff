@@ -655,9 +655,9 @@ class SequenceMatcher
     {
         if ($length) {
             return 2 * ($matches / $length);
-        } else {
-            return 1;
         }
+
+        return 1;
     }
 
     /**
@@ -674,9 +674,9 @@ class SequenceMatcher
     {
         if (isset($array[$key])) {
             return $array[$key];
-        } else {
-            return $default;
         }
+
+        return $default;
     }
 
     /**
@@ -692,17 +692,19 @@ class SequenceMatcher
         for ($i = 0; $i < $max; ++$i) {
             if ($a[$i] < $b[$i]) {
                 return -1;
-            } elseif ($a[$i] > $b[$i]) {
+            }
+            if ($a[$i] > $b[$i]) {
                 return 1;
             }
         }
 
         if (count($a) === count($b)) {
             return 0;
-        } elseif (count($a) < count($b)) {
-            return -1;
-        } else {
-            return 1;
         }
+        if (count($a) < count($b)) {
+            return -1;
+        }
+
+        return 1;
     }
 }
