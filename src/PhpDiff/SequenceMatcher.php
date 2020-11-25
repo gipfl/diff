@@ -361,12 +361,7 @@ class SequenceMatcher
         $bLength = count($this->b);
 
         $queue = [
-            [
-                0,
-                $aLength,
-                0,
-                $bLength
-            ]
+            [0, $aLength, 0, $bLength]
         ];
 
         $matchingBlocks = [];
@@ -398,6 +393,26 @@ class SequenceMatcher
 
         usort($matchingBlocks, [ArrayHelper::class, 'tupleSort']);
 
+        return static::getNonAdjacentBlocks($matchingBlocks, $aLength, $bLength);
+    }
+
+    public function getOpcodes()
+    {
+        if ($this->opCodes === null) {
+            $this->opCodes = OpCodeHelper::calculateOpCodes($this->getMatchingBlocks());
+        }
+
+        return $this->opCodes;
+    }
+
+    /**
+     * @param array $matchingBlocks
+     * @param $aLength
+     * @param $bLength
+     * @return array
+     */
+    protected static function getNonAdjacentBlocks(array $matchingBlocks, $aLength, $bLength)
+    {
         $i1 = 0;
         $j1 = 0;
         $k1 = 0;
@@ -421,16 +436,6 @@ class SequenceMatcher
         }
 
         $nonAdjacent[] = [$aLength, $bLength, 0];
-
         return $nonAdjacent;
-    }
-
-    public function getOpcodes()
-    {
-        if ($this->opCodes === null) {
-            $this->opCodes = OpCodeHelper::calculateOpCodes($this->getMatchingBlocks());
-        }
-
-        return $this->opCodes;
     }
 }
