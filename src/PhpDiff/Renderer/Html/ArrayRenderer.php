@@ -30,74 +30,88 @@ class ArrayRenderer extends AbstractRenderer
         $b = $this->diff->getB();
 
         $changes = [];
-        $opCodes = $this->diff->getGroupedOpcodes();
-        foreach ($opCodes as $group) {
-            $blocks = [];
-            $lastTag = null;
-            $lastBlock = 0;
-            foreach ($group as $code) {
-                list($tag, $i1, $i2, $j1, $j2) = $code;
+        foreach ($this->diff->getGroupedOpcodes() as $group) {
+            $changes[] = $this->renderOpcodesGroup($group, $a, $b);
+        }
+        return $changes;
+    }
 
-                if ($tag === 'replace' && $i2 - $i1 === $j2 - $j1) {
-                    for ($i = 0; $i < ($i2 - $i1); ++$i) {
-                        $fromLine = $a[$i1 + $i];
-                        $toLine = $b[$j1 + $i];
+    protected function insertLineMarkers($line, $start, $end)
+    {
+        $last = $end + mb_strlen($line);
 
-                        list($start, $end) = $this->getChangeExtent($fromLine, $toLine);
-                        if ($start !== 0 || $end !== 0) {
-                            $last = $end + strlen($fromLine);
-                            $fromLine = substr_replace($fromLine, "\0", $start, 0);
-                            $fromLine = substr_replace($fromLine, "\1", $last + 1, 0);
-                            $last = $end + strlen($toLine);
-                            $toLine = substr_replace($toLine, "\0", $start, 0);
-                            $toLine = substr_replace($toLine, "\1", $last + 1, 0);
-                            $a[$i1 + $i] = $fromLine;
-                            $b[$j1 + $i] = $toLine;
-                        }
-                    }
-                }
+        return mb_substr($line, 0, $start)
+            . "\0"
+            . mb_substr($line, $start, $last - $start)
+            . "\1"
+            . mb_substr($line, $last);
+    }
 
-                if ($tag !== $lastTag) {
-                    $blocks[] = [
-                        'tag' => $tag,
-                        'base' => [
-                            'offset' => $i1,
-                            'lines' => []
-                        ],
-                        'changed' => [
-                            'offset' => $j1,
-                            'lines' => []
-                        ]
-                    ];
-                    $lastBlock = count($blocks)-1;
-                }
+    /**
+     * @param $group
+     * @param array $a
+     * @param array $b
+     * @return array
+     */
+    protected function renderOpcodesGroup($group, array $a, array $b)
+    {
+        $blocks = [];
+        $lastTag = null;
+        $lastBlock = 0;
+        foreach ($group as list($tag, $i1, $i2, $j1, $j2)) {
+            if ($tag === 'replace' && $i2 - $i1 === $j2 - $j1) {
+                for ($i = 0; $i < ($i2 - $i1); ++$i) {
+                    $fromLine = $a[$i1 + $i];
+                    $toLine = $b[$j1 + $i];
 
-                $lastTag = $tag;
-
-                if ($tag === 'equal') {
-                    $lines = array_slice($a, $i1, ($i2 - $i1));
-                    $blocks[$lastBlock]['base']['lines'] += $this->formatLines($lines);
-                    $lines = array_slice($b, $j1, ($j2 - $j1));
-                    $blocks[$lastBlock]['changed']['lines'] += $this->formatLines($lines);
-                } else {
-                    if ($tag === 'replace' || $tag === 'delete') {
-                        $lines = array_slice($a, $i1, ($i2 - $i1));
-                        $lines = $this->formatLines($lines);
-                        $lines = str_replace(array("\0", "\1"), array('<del>', '</del>'), $lines);
-                        $blocks[$lastBlock]['base']['lines'] += $lines;
-                    }
-
-                    if ($tag === 'replace' || $tag === 'insert') {
-                        $lines = array_slice($b, $j1, ($j2 - $j1));
-                        $lines =  $this->formatLines($lines);
-                        $lines = str_replace(array("\0", "\1"), array('<ins>', '</ins>'), $lines);
-                        $blocks[$lastBlock]['changed']['lines'] += $lines;
+                    list($start, $end) = $this->getChangeExtent($fromLine, $toLine);
+                    if ($start !== 0 || $end !== 0) {
+                        $a[$i1 + $i] = $this->insertLineMarkers($fromLine, $start, $end);
+                        $b[$j1 + $i] = $this->insertLineMarkers($toLine, $start, $end);
                     }
                 }
             }
-            $changes[] = $blocks;
+
+            if ($tag !== $lastTag) {
+                $blocks[] = [
+                    'tag' => $tag,
+                    'base' => [
+                        'offset' => $i1,
+                        'lines' => []
+                    ],
+                    'changed' => [
+                        'offset' => $j1,
+                        'lines' => []
+                    ]
+                ];
+                $lastBlock = count($blocks) - 1;
+            }
+
+            $lastTag = $tag;
+
+            if ($tag === 'equal') {
+                $lines = array_slice($a, $i1, ($i2 - $i1));
+                $blocks[$lastBlock]['base']['lines'] += $this->formatLines($lines);
+                $lines = array_slice($b, $j1, ($j2 - $j1));
+                $blocks[$lastBlock]['changed']['lines'] += $this->formatLines($lines);
+            } else {
+                if ($tag === 'replace' || $tag === 'delete') {
+                    $lines = array_slice($a, $i1, ($i2 - $i1));
+                    $lines = $this->formatLines($lines);
+                    $lines = str_replace(array("\0", "\1"), array('<del>', '</del>'), $lines);
+                    $blocks[$lastBlock]['base']['lines'] += $lines;
+                }
+
+                if ($tag === 'replace' || $tag === 'insert') {
+                    $lines = array_slice($b, $j1, ($j2 - $j1));
+                    $lines = $this->formatLines($lines);
+                    $lines = str_replace(array("\0", "\1"), array('<ins>', '</ins>'), $lines);
+                    $blocks[$lastBlock]['changed']['lines'] += $lines;
+                }
+            }
         }
-        return $changes;
+
+        return $blocks;
     }
 
     /**
