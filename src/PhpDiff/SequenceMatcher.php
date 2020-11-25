@@ -215,7 +215,7 @@ class SequenceMatcher
 
         for ($i = $alo; $i < $ahi; ++$i) {
             $newJ2Len = [];
-            $jDict = $this->arrayGetDefault($this->b2j, $a[$i], $nothing);
+            $jDict = ArrayHelper::getPropertyOrDefault($this->b2j, $a[$i], $nothing);
             foreach ($jDict as $jKey => $j) {
                 if ($j < $blo) {
                     continue;
@@ -224,7 +224,7 @@ class SequenceMatcher
                     break;
                 }
 
-                $k = $this->arrayGetDefault($j2Len, $j -1, 0) + 1;
+                $k = ArrayHelper::getPropertyOrDefault($j2Len, $j -1, 0) + 1;
                 $newJ2Len[$j] = $k;
                 if ($k > $bestSize) {
                     $bestI = $i - $k + 1;
