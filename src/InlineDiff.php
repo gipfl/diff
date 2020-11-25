@@ -2,7 +2,7 @@
 
 namespace gipfl\Diff;
 
-use Diff_Renderer_Html_Inline as Inline;
+use gipfl\Diff\PhpDiff\Renderer\Html\Inline;
 use ipl\Html\ValidHtml;
 
 class InlineDiff implements ValidHtml

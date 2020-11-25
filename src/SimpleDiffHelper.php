@@ -2,7 +2,7 @@
 
 namespace gipfl\Diff;
 
-use Diff as PhpDiff;
+use gipfl\Diff\PhpDiff\Renderer\AbstractRenderer;
 use LogicException;
 use function explode;
 
@@ -15,7 +15,7 @@ trait SimpleDiffHelper
     /** @var PhpDiff */
     protected $diff;
 
-    /** @var \Diff_Renderer_Abstract */
+    /** @var AbstractRenderer */
     protected $renderer;
 
     public function __construct($left, $right)
@@ -51,7 +51,7 @@ trait SimpleDiffHelper
     }
 
     /**
-     * @return \Diff_Renderer_Abstract
+     * @return AbstractRenderer
      */
     protected function getRenderer()
     {

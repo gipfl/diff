@@ -2,7 +2,7 @@
 
 namespace gipfl\Diff;
 
-use Diff_Renderer_Text_Unified as Unified;
+use gipfl\Diff\PhpDiff\Renderer\Text\Unified;
 
 class UnifiedDiff
 {

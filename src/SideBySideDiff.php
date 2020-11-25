@@ -2,7 +2,7 @@
 
 namespace gipfl\Diff;
 
-use Diff_Renderer_Html_SideBySide as SideBySide;
+use gipfl\Diff\PhpDiff\Renderer\Html\SideBySide;
 use ipl\Html\ValidHtml;
 
 class SideBySideDiff implements ValidHtml
