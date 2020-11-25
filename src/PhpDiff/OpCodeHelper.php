@@ -5,6 +5,60 @@ namespace gipfl\Diff\PhpDiff;
 abstract class OpCodeHelper
 {
     /**
+     * Return a list of all of the opcodes for the differences between the
+     * two strings.
+     *
+     * The nested array returned contains an array describing the opcode
+     * which includes:
+     * 0 - The type of tag (as described below) for the opcode.
+     * 1 - The beginning line in the first sequence.
+     * 2 - The end line in the first sequence.
+     * 3 - The beginning line in the second sequence.
+     * 4 - The end line in the second sequence.
+     *
+     * The different types of tags include:
+     * replace - The string from $i1 to $i2 in $a should be replaced by
+     *           the string in $b from $j1 to $j2.
+     * delete -  The string in $a from $i1 to $j2 should be deleted.
+     * insert -  The string in $b from $j1 to $j2 should be inserted at
+     *           $i1 in $a.
+     * equal  -  The two strings with the specified ranges are equal.
+     *
+     * @param array $blocks
+     * @return array Array of the opcodes describing the differences between the strings.
+     */
+    public static function calculateOpCodes(array $blocks)
+    {
+        $i = 0;
+        $j = 0;
+        $opCodes = [];
+
+        foreach ($blocks as list($ai, $bj, $size)) {
+            $tag = '';
+            if ($i < $ai && $j < $bj) {
+                $tag = 'replace';
+            } elseif ($i < $ai) {
+                $tag = 'delete';
+            } elseif ($j < $bj) {
+                $tag = 'insert';
+            }
+
+            if ($tag) {
+                $opCodes[] = [$tag, $i, $ai, $j, $bj];
+            }
+
+            $i = $ai + $size;
+            $j = $bj + $size;
+
+            if ($size) {
+                $opCodes[] = ['equal', $ai, $i, $bj, $j];
+            }
+        }
+
+        return $opCodes;
+    }
+
+    /**
      * Return a series of nested arrays containing different groups of generated
      * opcodes for the differences between the strings with up to $context lines
      * of surrounding content.
