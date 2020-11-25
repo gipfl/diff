@@ -348,10 +348,15 @@ class SequenceMatcher
      */
     public function getMatchingBlocks()
     {
-        if (!empty($this->matchingBlocks)) {
-            return $this->matchingBlocks;
+        if ($this->matchingBlocks === null) {
+            $this->matchingBlocks = $this->calculateMatchingBlocks();
         }
 
+        return $this->matchingBlocks;
+    }
+
+    public function calculateMatchingBlocks()
+    {
         $aLength = count($this->a);
         $bLength = count($this->b);
 
@@ -397,8 +402,7 @@ class SequenceMatcher
         $j1 = 0;
         $k1 = 0;
         $nonAdjacent = [];
-        foreach ($matchingBlocks as $block) {
-            list($i2, $j2, $k2) = $block;
+        foreach ($matchingBlocks as list($i2, $j2, $k2)) {
             if ($i1 + $k1 === $i2 && $j1 + $k1 === $j2) {
                 $k1 += $k2;
             } else {
@@ -418,8 +422,7 @@ class SequenceMatcher
 
         $nonAdjacent[] = [$aLength, $bLength, 0];
 
-        $this->matchingBlocks = $nonAdjacent;
-        return $this->matchingBlocks;
+        return $nonAdjacent;
     }
 
     public function getOpcodes()
