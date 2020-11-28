@@ -5,8 +5,6 @@ namespace gipfl\Diff\PhpDiff;
 use function array_merge;
 use function count;
 use function is_array;
-use function max;
-use function min;
 use function str_replace;
 use function str_split;
 use function strtolower;

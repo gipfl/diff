@@ -2,6 +2,10 @@
 
 namespace gipfl\Diff\PhpDiff;
 
+use function count;
+use function max;
+use function min;
+
 abstract class OpCodeHelper
 {
     /**
