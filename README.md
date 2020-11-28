@@ -1,7 +1,7 @@
 gipfl\\Diff
 ===========
 
-ipl-compatible wrapper for php-diff
+ipl-compatible modernized php-diff fork
 
 Usage
 -----
