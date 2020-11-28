@@ -24,31 +24,25 @@ abstract class ArrayHelper
     }
 
     /**
-     * Sort an array by the nested arrays it contains. Helper function for getMatchingBlocks
-     *
-     * @param array $a First array to compare.
-     * @param array $b Second array to compare.
-     * @return int -1, 0 or 1, as expected by the usort function.
+     * Sort Blocks
+     * @param Block $a
+     * @param Block $b
+     * @return int -1, 0 or 1, as expected by the usort function
      */
-    public static function tupleSort($a, $b)
+    public static function blockSort(Block $a, Block $b)
     {
-        $max = max(count($a), count($b));
-        for ($i = 0; $i < $max; ++$i) {
-            if ($a[$i] < $b[$i]) {
-                return -1;
+        if ($a->size === $b->size) {
+            if ($a->beginLeft === $b->beginLeft) {
+                if ($a->beginRight === $b->beginRight) {
+                    return 0;
+                }
+
+                return $a->beginRight < $b->beginRight ? -1 : 1;
             }
-            if ($a[$i] > $b[$i]) {
-                return 1;
-            }
+
+            return $a->beginLeft < $b->beginLeft ? -1 : 1;
         }
 
-        if (count($a) === count($b)) {
-            return 0;
-        }
-        if (count($a) < count($b)) {
-            return -1;
-        }
-
-        return 1;
+        return $a->size < $b->size ? -1 : 1;
     }
 }

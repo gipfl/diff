@@ -28,7 +28,7 @@ abstract class OpCodeHelper
      *           $i1 in $a.
      * equal  -  The two strings with the specified ranges are equal.
      *
-     * @param array $blocks
+     * @param Block[] $blocks
      * @return array Array of the opcodes describing the differences between the strings.
      */
     public static function calculateOpCodes(array $blocks)
@@ -37,27 +37,27 @@ abstract class OpCodeHelper
         $lastRightEnd = 0;
         $opCodes = [];
 
-        foreach ($blocks as list($beginLeft, $beginRight, $cntLines)) {
+        foreach ($blocks as $block) {
             $tag = null;
-            if ($lastLeftEnd < $beginLeft) {
-                if ($lastRightEnd < $beginRight) {
+            if ($lastLeftEnd < $block->beginLeft) {
+                if ($lastRightEnd < $block->beginRight) {
                     $tag = 'replace';
                 } else {
                     $tag = 'delete';
                 }
-            } elseif ($lastRightEnd < $beginRight) {
+            } elseif ($lastRightEnd < $block->beginRight) {
                 $tag = 'insert';
             }
 
             if ($tag) {
-                $opCodes[] = [$tag, $lastLeftEnd, $beginLeft, $lastRightEnd, $beginRight];
+                $opCodes[] = [$tag, $lastLeftEnd, $block->beginLeft, $lastRightEnd, $block->beginRight];
             }
 
-            $lastLeftEnd = $beginLeft + $cntLines;
-            $lastRightEnd = $beginRight + $cntLines;
+            $lastLeftEnd = $block->beginLeft + $block->size;
+            $lastRightEnd = $block->beginRight + $block->size;
 
-            if ($cntLines) {
-                $opCodes[] = ['equal', $beginLeft, $lastLeftEnd, $beginRight, $lastRightEnd];
+            if ($block->hasLines()) {
+                $opCodes[] = ['equal', $block->beginLeft, $lastLeftEnd, $block->beginRight, $lastRightEnd];
             }
         }
 

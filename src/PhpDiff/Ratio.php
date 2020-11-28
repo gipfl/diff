@@ -48,6 +48,8 @@ class Ratio
     {
         if ($this->ratio === null) {
             $matcher = $this->matcher;
+            // Hint: these are now instances of Block, so this no longer works. But
+            // it used to be broken anyway, needs to be fixed
             $matches = array_reduce($matcher->getMatchingBlocks(), [$this, 'ratioReduce'], 0);
             $this->ratio = $this->calculateRatio(
                 $matches,
