@@ -26,8 +26,8 @@ class Ratio
     public function __construct(SequenceMatcher $matcher)
     {
         $this->matcher = $matcher;
-        $this->a = $matcher->getA();
-        $this->b = $matcher->getB();
+        $this->a = $matcher->getLeftSequence();
+        $this->b = $matcher->getRightSequence();
     }
 
     /**

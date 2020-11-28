@@ -33,29 +33,31 @@ abstract class OpCodeHelper
      */
     public static function calculateOpCodes(array $blocks)
     {
-        $i = 0;
-        $j = 0;
+        $lastLeftEnd = 0;
+        $lastRightEnd = 0;
         $opCodes = [];
 
-        foreach ($blocks as list($ai, $bj, $size)) {
-            $tag = '';
-            if ($i < $ai && $j < $bj) {
-                $tag = 'replace';
-            } elseif ($i < $ai) {
-                $tag = 'delete';
-            } elseif ($j < $bj) {
+        foreach ($blocks as list($beginLeft, $beginRight, $cntLines)) {
+            $tag = null;
+            if ($lastLeftEnd < $beginLeft) {
+                if ($lastRightEnd < $beginRight) {
+                    $tag = 'replace';
+                } else {
+                    $tag = 'delete';
+                }
+            } elseif ($lastRightEnd < $beginRight) {
                 $tag = 'insert';
             }
 
             if ($tag) {
-                $opCodes[] = [$tag, $i, $ai, $j, $bj];
+                $opCodes[] = [$tag, $lastLeftEnd, $beginLeft, $lastRightEnd, $beginRight];
             }
 
-            $i = $ai + $size;
-            $j = $bj + $size;
+            $lastLeftEnd = $beginLeft + $cntLines;
+            $lastRightEnd = $beginRight + $cntLines;
 
-            if ($size) {
-                $opCodes[] = ['equal', $ai, $i, $bj, $j];
+            if ($cntLines) {
+                $opCodes[] = ['equal', $beginLeft, $lastLeftEnd, $beginRight, $lastRightEnd];
             }
         }
 
@@ -97,34 +99,40 @@ abstract class OpCodeHelper
 
         $lastItem = count($opCodes) - 1;
         if ($opCodes[$lastItem][0] === 'equal') {
-            list($tag, $i1, $i2, $j1, $j2) = $opCodes[$lastItem];
+            list($tag, $beginLeft, $endLeft, $beginRight, $endRight) = $opCodes[$lastItem];
             $opCodes[$lastItem] = [
                 $tag,
-                $i1,
-                min($i2, $i1 + $context),
-                $j1,
-                min($j2, $j1 + $context)
+                $beginLeft,
+                min($endLeft, $beginLeft + $context),
+                $beginRight,
+                min($endRight, $beginRight + $context)
             ];
         }
-
+        /*
+        public $type;
+        public $beginLeft;
+        public $endLeft;
+        public $beginRight;
+        public $endRight;
+        */
         $maxRange = $context * 2;
         $groups = [];
         $group = [];
-        foreach ($opCodes as list($tag, $i1, $i2, $j1, $j2)) {
-            if ($tag === 'equal' && $i2 - $i1 > $maxRange) {
+        foreach ($opCodes as list($tag, $beginLeft, $endLeft, $beginRight, $endRight)) {
+            if ($tag === 'equal' && $endLeft - $beginLeft > $maxRange) {
                 $group[] = [
                     $tag,
-                    $i1,
-                    min($i2, $i1 + $context),
-                    $j1,
-                    min($j2, $j1 + $context)
+                    $beginLeft,
+                    min($endLeft, $beginLeft + $context),
+                    $beginRight,
+                    min($endRight, $beginRight + $context)
                 ];
                 $groups[] = $group;
                 $group = [];
-                $i1 = max($i1, $i2 - $context);
-                $j1 = max($j1, $j2 - $context);
+                $beginLeft = max($beginLeft, $endLeft - $context);
+                $beginRight = max($beginRight, $endRight - $context);
             }
-            $group[] = [$tag, $i1, $i2, $j1, $j2];
+            $group[] = [$tag, $beginLeft, $endLeft, $beginRight, $endRight];
         }
 
         if (!empty($group) && !(count($group) === 1 && $group[0][0] === 'equal')) {
