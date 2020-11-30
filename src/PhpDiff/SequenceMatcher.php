@@ -50,7 +50,7 @@ class SequenceMatcher
         'ignoreCase' => false
     ];
 
-    /** @var Block[] */
+    /** @var array|null */
     private $matchingBlocks;
 
     /** @var array|null */
@@ -231,7 +231,7 @@ class SequenceMatcher
      * @param int $endLeft The upper constraint for the first sequence.
      * @param int $beginRight The lower constraint for the second sequence.
      * @param int $endRight The upper constraint for the second sequence.
-     * @return Block containing the longest match that includes the starting
+     * @return array Array containing the longest match that includes the starting
      *               position in $a, start in $b and the length/size.
      */
     public function findLongestMatch($beginLeft, $endLeft, $beginRight, $endRight)
@@ -304,7 +304,7 @@ class SequenceMatcher
             ++$bestSize;
         }
 
-        return new Block($bestBeginLeft, $bestBeginRight, $bestSize);
+        return [$bestBeginLeft, $bestBeginRight, $bestSize];
     }
 
     /**
@@ -341,7 +341,7 @@ class SequenceMatcher
      * constraint of the block in $b and finally the number of lines that the
      * block continues for.
      *
-     * @return Block[] Nested array of the matching blocks, as described by the function.
+     * @return array Nested array of the matching blocks, as described by the function.
      */
     public function getMatchingBlocks()
     {
@@ -365,12 +365,10 @@ class SequenceMatcher
         while (!empty($queue)) {
             list($leftBegin, $leftEnd, $rightBegin, $rightEnd) = array_pop($queue);
             $block = $this->findLongestMatch($leftBegin, $leftEnd, $rightBegin, $rightEnd);
-            $bestBeginLeft = $block->beginLeft;
-            $bestBeginRight = $block->beginRight;
-            $bestSize = $block->size;
-            if ($block->hasLines()) {
+            list($bestBeginLeft, $bestBeginRight, $bestSize) = $block;
+            if ($bestSize) {
                 $matchingBlocks[] = $block;
-                if ($leftBegin < $bestBeginLeft && $bestBeginRight) {
+                if ($leftBegin < $bestBeginLeft && $rightBegin < $bestBeginRight) {
                     $queue[] = [
                         $leftBegin,
                         $bestBeginLeft,
@@ -390,7 +388,7 @@ class SequenceMatcher
             }
         }
 
-        usort($matchingBlocks, [ArrayHelper::class, 'blockSort']);
+        usort($matchingBlocks, [ArrayHelper::class, 'tupleSort']);
 
         return static::getNonAdjacentBlocks($matchingBlocks, $leftLength, $rightLength);
     }
@@ -405,36 +403,36 @@ class SequenceMatcher
     }
 
     /**
-     * @param Block[] $blocks
+     * @param array $matchingBlocks
      * @param $leftLength
      * @param $rightLength
-     * @return Block[]
+     * @return array
      */
-    protected static function getNonAdjacentBlocks(array $blocks, $leftLength, $rightLength)
+    protected static function getNonAdjacentBlocks(array $matchingBlocks, $leftLength, $rightLength)
     {
         $newLeft = 0;
         $newRight = 0;
-        $newSize = 0;
+        $newCnt = 0;
         $nonAdjacent = [];
-        foreach ($blocks as $block) {
-            if ($newLeft + $newSize === $block->beginLeft && $newRight + $newSize === $block->beginRight) {
-                $newSize += $block->size;
+        foreach ($matchingBlocks as list($beginLeft, $beginRight, $cntLines)) {
+            if ($newLeft + $newCnt === $beginLeft && $newRight + $newCnt === $beginRight) {
+                $newCnt += $cntLines;
             } else {
-                if ($newSize) {
-                    $nonAdjacent[] = new Block($newLeft, $newRight, $newSize);
+                if ($newCnt) {
+                    $nonAdjacent[] = [$newLeft, $newRight, $newCnt];
                 }
 
-                $newLeft = $block->beginLeft;
-                $newRight = $block->beginRight;
-                $newSize = $block->size;
+                $newLeft = $beginLeft;
+                $newRight = $beginRight;
+                $newCnt = $cntLines;
             }
         }
 
-        if ($newSize) {
-            $nonAdjacent[] = new Block($newLeft, $newRight, $newSize);
+        if ($newCnt) {
+            $nonAdjacent[] = [$newLeft, $newRight, $newCnt];
         }
 
-        $nonAdjacent[] = new Block($leftLength, $rightLength, 0);
+        $nonAdjacent[] = [$leftLength, $rightLength, 0];
         return $nonAdjacent;
     }
 }
