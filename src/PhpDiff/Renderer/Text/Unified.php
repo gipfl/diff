@@ -34,14 +34,14 @@ class Unified extends AbstractRenderer
             foreach ($group as $code) {
                 list($tag, $i1, $i2, $j1, $j2) = $code;
                 if ($tag === 'equal') {
-                    $diff .= ' ' . implode("\n ", $this->diff->GetA($i1, $i2))."\n";
+                    $diff .= ' ' . implode("\n ", $this->diff->getLeft($i1, $i2))."\n";
                 } else {
                     if ($tag === 'replace' || $tag === 'delete') {
-                        $diff .= '-' . implode("\n-", $this->diff->GetA($i1, $i2))."\n";
+                        $diff .= '-' . implode("\n-", $this->diff->getLeft($i1, $i2))."\n";
                     }
 
                     if ($tag === 'replace' || $tag === 'insert') {
-                        $diff .= '+' . implode("\n+", $this->diff->GetB($j1, $j2))."\n";
+                        $diff .= '+' . implode("\n+", $this->diff->getRight($j1, $j2))."\n";
                     }
                 }
             }

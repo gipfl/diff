@@ -19,10 +19,12 @@ abstract class AbstractRenderer
     protected $options = [];
 
     /**
+     * @param PhpDiff $diff
      * @param array $options Optionally, an array of the options for the renderer.
      */
-    public function __construct(array $options = [])
+    public function __construct(PhpDiff $diff, array $options = [])
     {
+        $this->diff = $diff;
         $this->setOptions($options);
     }
 

@@ -64,7 +64,7 @@ class Context extends AbstractRenderer
                     }
                     $diff .= $this->tagMap[$tag]
                         . ' '
-                        . implode("\n" . $this->tagMap[$tag] . ' ', $this->diff->GetA($i1, $i2))
+                        . implode("\n" . $this->tagMap[$tag] . ' ', $this->diff->getLeft($i1, $i2))
                         . "\n";
                 }
             }
@@ -87,7 +87,7 @@ class Context extends AbstractRenderer
                     }
                     $diff .= $this->tagMap[$tag]
                         . ' '
-                        . implode("\n" . $this->tagMap[$tag] . ' ', $this->diff->GetB($j1, $j2))
+                        . implode("\n" . $this->tagMap[$tag] . ' ', $this->diff->getRight($j1, $j2))
                         . "\n";
                 }
             }

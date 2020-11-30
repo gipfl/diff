@@ -3,22 +3,15 @@
 namespace gipfl\Diff;
 
 use gipfl\Diff\PhpDiff\OpCodeHelper;
-use gipfl\Diff\PhpDiff\Renderer\AbstractRenderer;
 use gipfl\Diff\PhpDiff\SequenceMatcher;
 
-/**
- * Please do not use this directly, everything php-diff-related is still subject
- * to heavy refactoring
- *
- * @internal
- */
 class PhpDiff
 {
     /** @var array The "old" sequence to use as the basis for the comparison */
-    private $a;
+    private $left;
 
     /** @var array The "new" sequence to generate the changes for */
-    private $b;
+    private $right;
 
     /** @var array contains the generated opcodes for the differences between the two items */
     private $groupedCodes;
@@ -39,34 +32,18 @@ class PhpDiff
     private $options;
 
     /**
-     * The constructor.
+     * $left and $right can be strings, arrays of lines, null or any object that
+     * can be casted to a string
      *
-     * @param array $a Array containing the lines of the first string to compare.
-     * @param array $b Array containing the lines for the second string to compare.
-     * @param array $options
+     * @param mixed $left Left hand (old) side of the comparison
+     * @param mixed $right Right hand (new) side of the comparison
+     * @param array $options see $defaultOptions for possible settings
      */
-    public function __construct($a, $b, $options = [])
+    public function __construct($left, $right, array $options = [])
     {
-        $this->a = $a;
-        $this->b = $b;
-
-        if (is_array($options)) {
-            $this->options = array_merge($this->defaultOptions, $options);
-        } else {
-            $this->options = $this->defaultOptions;
-        }
-    }
-
-    /**
-     * Render a diff using the supplied rendering class and return it.
-     *
-     * @param AbstractRenderer $renderer An instance of the rendering object to use for generating the diff.
-     * @return mixed The generated diff. Exact return value depends on the rendered.
-     */
-    public function render(AbstractRenderer $renderer)
-    {
-        $renderer->diff = $this;
-        return $renderer->render();
+        $this->setLeftLines($this->wantArray($left));
+        $this->setRightLines($this->wantArray($right));
+        $this->options = array_merge($this->defaultOptions, $options);
     }
 
     /**
@@ -79,10 +56,10 @@ class PhpDiff
      * @param int $end The ending number. If not supplied, only the item in $start will be returned.
      * @return array Array of all of the lines between the specified range.
      */
-    public function getA($start = 0, $end = null)
+    public function getLeft($start = 0, $end = null)
     {
         if ($start === 0 && $end === null) {
-            return $this->a;
+            return $this->left;
         }
 
         if ($end === null) {
@@ -91,7 +68,7 @@ class PhpDiff
             $length = $end - $start;
         }
 
-        return array_slice($this->a, $start, $length);
+        return array_slice($this->left, $start, $length);
     }
 
     /**
@@ -104,10 +81,10 @@ class PhpDiff
      * @param int $end The ending number. If not supplied, only the item in $start will be returned.
      * @return array Array of all of the lines between the specified range.
      */
-    public function getB($start = 0, $end = null)
+    public function getRight($start = 0, $end = null)
     {
         if ($start === 0 && $end === null) {
-            return $this->b;
+            return $this->right;
         }
 
         if ($end === null) {
@@ -116,7 +93,7 @@ class PhpDiff
             $length = $end - $start;
         }
 
-        return array_slice($this->b, $start, $length);
+        return array_slice($this->right, $start, $length);
     }
 
     /**
@@ -138,10 +115,33 @@ class PhpDiff
 
     protected function fetchGroupedOpCodes()
     {
-        $matcher = new SequenceMatcher($this->a, $this->b, null, $this->options);
+        $matcher = new SequenceMatcher($this->left, $this->right, null, $this->options);
         return OpCodeHelper::getGroupedOpcodes(
             $matcher->getOpcodes(),
             $this->options['context']
         );
     }
+
+    protected function wantArray($value)
+    {
+        if (empty($value)) {
+            return [];
+        }
+        if (! is_array($value)) {
+            return explode("\n", (string) $value);
+        }
+
+        return $value;
+    }
+
+    protected function setLeftLines(array $lines)
+    {
+        $this->left = $lines;
+    }
+
+    protected function setRightLines(array $lines)
+    {
+        $this->right = $lines;
+    }
+
 }

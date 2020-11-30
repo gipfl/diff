@@ -9,15 +9,16 @@ Usage
 ```php
 <?php
 
-use gipfl\Diff\SideBySideDiff;
+use gipfl\Diff\HtmlRenderer\SideBySideDiff;
+use gipfl\Diff\PhpDiff;
 
 require_once 'vendor/autoload.php';
 
-assert($this->parent instanceof \ipl\Html\BaseHtmlElement);
-$this->parent->add(SideBySideDiff::create(
+$diff = new PhpDiff(
     file_get_contents(__DIR__ . '/left.json'),
     file_get_contents(__DIR__ . '/right.json')
-));
+);
+$this->parent->add(new SideBySideDiff($diff));
 ```
 
 Credits
