@@ -29,7 +29,7 @@ abstract class OpCodeHelper
      * equal  -  The two strings with the specified ranges are equal.
      *
      * @param Block[] $blocks
-     * @return array Array of the opcodes describing the differences between the strings.
+     * @return OpCode[] Array of the opcodes describing the differences between the strings.
      */
     public static function calculateOpCodes(array $blocks)
     {
@@ -50,14 +50,14 @@ abstract class OpCodeHelper
             }
 
             if ($tag) {
-                $opCodes[] = [$tag, $lastLeftEnd, $block->beginLeft, $lastRightEnd, $block->beginRight];
+                $opCodes[] = new OpCode($tag, $lastLeftEnd, $block->beginLeft, $lastRightEnd, $block->beginRight);
             }
 
             $lastLeftEnd = $block->beginLeft + $block->size;
             $lastRightEnd = $block->beginRight + $block->size;
 
             if ($block->hasLines()) {
-                $opCodes[] = ['equal', $block->beginLeft, $lastLeftEnd, $block->beginRight, $lastRightEnd];
+                $opCodes[] = new OpCode('equal', $block->beginLeft, $lastLeftEnd, $block->beginRight, $lastRightEnd);
             }
         }
 
@@ -77,65 +77,41 @@ abstract class OpCodeHelper
      *
      * @param array $opCodes
      * @param int $context The number of lines of context to provide around the groups.
-     * @return array Nested array of all of the grouped opcodes.
+     * @return OpCode[] Nested array of all of the grouped opcodes.
      */
     public static function getGroupedOpcodes(array $opCodes, $context = 3)
     {
         if (empty($opCodes)) {
-            $opCodes = [
-                ['equal', 0, 1, 0, 1]
-            ];
+            $opCodes = [new OpCode('equal', 0, 1, 0, 1)];
         }
 
-        if ($opCodes[0][0] === 'equal') {
-            $opCodes[0] = [
-                $opCodes[0][0],
-                max($opCodes[0][1], $opCodes[0][2] - $context),
-                $opCodes[0][2],
-                max($opCodes[0][3], $opCodes[0][4] - $context),
-                $opCodes[0][4]
-            ];
+        if ($opCodes[0]->type === 'equal') {
+            $opCodes[0] = $opCodes[0]->withLowerContext($context);
         }
 
         $lastItem = count($opCodes) - 1;
-        if ($opCodes[$lastItem][0] === 'equal') {
-            list($tag, $beginLeft, $endLeft, $beginRight, $endRight) = $opCodes[$lastItem];
-            $opCodes[$lastItem] = [
-                $tag,
-                $beginLeft,
-                min($endLeft, $beginLeft + $context),
-                $beginRight,
-                min($endRight, $beginRight + $context)
-            ];
+        if ($opCodes[$lastItem]->type === 'equal') {
+            $opCodes[$lastItem] = $opCodes[$lastItem]->withUpperContext($context);
         }
-        /*
-        public $type;
-        public $beginLeft;
-        public $endLeft;
-        public $beginRight;
-        public $endRight;
-        */
+
         $maxRange = $context * 2;
         $groups = [];
         $group = [];
-        foreach ($opCodes as list($tag, $beginLeft, $endLeft, $beginRight, $endRight)) {
-            if ($tag === 'equal' && $endLeft - $beginLeft > $maxRange) {
-                $group[] = [
-                    $tag,
-                    $beginLeft,
-                    min($endLeft, $beginLeft + $context),
-                    $beginRight,
-                    min($endRight, $beginRight + $context)
-                ];
+        foreach ($opCodes as $opCode) {
+            if ($opCode->type === 'equal'
+                && $opCode->endLeft - $opCode->beginLeft > $maxRange
+            ) {
+                $group[] = $opCode->withUpperContext($context);
                 $groups[] = $group;
                 $group = [];
-                $beginLeft = max($beginLeft, $endLeft - $context);
-                $beginRight = max($beginRight, $endRight - $context);
+                $opCode = $opCode->withLowerContext($context);
             }
-            $group[] = [$tag, $beginLeft, $endLeft, $beginRight, $endRight];
+            $group[] = $opCode;
         }
 
-        if (!empty($group) && !(count($group) === 1 && $group[0][0] === 'equal')) {
+        if (!empty($group)
+            && !(count($group) === 1 && $group[0]->type === 'equal')
+        ) {
             $groups[] = $group;
         }
 

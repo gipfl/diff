@@ -53,7 +53,7 @@ class SequenceMatcher
     /** @var Block[] */
     private $matchingBlocks;
 
-    /** @var array|null */
+    /** @var OpCode[] */
     private $opCodes;
 
     /**

@@ -2,6 +2,7 @@
 
 namespace gipfl\Diff\PhpDiff\Renderer\Html;
 
+use gipfl\Diff\PhpDiff\OpCode;
 use gipfl\Diff\PhpDiff\Renderer\AbstractRenderer;
 
 /**
@@ -31,7 +32,7 @@ class ArrayRenderer extends AbstractRenderer
 
         $changes = [];
         foreach ($this->diff->getGroupedOpcodes() as $group) {
-            $changes[] = $this->renderOpcodesGroup($group, $a, $b);
+            $changes[] = $this->renderOpCodeGroup($group, $a, $b);
         }
         return $changes;
     }
@@ -48,62 +49,67 @@ class ArrayRenderer extends AbstractRenderer
     }
 
     /**
-     * @param $group
+     * @param OpCode[] $group
      * @param array $a
      * @param array $b
      * @return array
      */
-    protected function renderOpcodesGroup($group, array $a, array $b)
+    protected function renderOpCodeGroup($group, array $a, array $b)
     {
         $blocks = [];
         $lastTag = null;
         $lastBlock = 0;
-        foreach ($group as list($tag, $i1, $i2, $j1, $j2)) {
-            if ($tag === 'replace' && $i2 - $i1 === $j2 - $j1) {
-                for ($i = 0; $i < ($i2 - $i1); ++$i) {
-                    $fromLine = $a[$i1 + $i];
-                    $toLine = $b[$j1 + $i];
+        foreach ($group as $opCode) {
+            $type = $opCode->type;
+            $beginLeft = $opCode->beginLeft;
+            $beginRight = $opCode->beginRight;
+            $endLeft = $opCode->endLeft;
+            $endRight = $opCode->endRight;
+            if ($type === 'replace' && $endLeft - $beginLeft === $endRight - $beginRight) {
+                for ($i = 0; $i < ($endLeft - $beginLeft); ++$i) {
+                    $fromLine = $a[$beginLeft + $i];
+                    $toLine = $b[$beginRight + $i];
 
                     list($start, $end) = $this->getChangeExtent($fromLine, $toLine);
                     if ($start !== 0 || $end !== 0) {
-                        $a[$i1 + $i] = $this->insertLineMarkers($fromLine, $start, $end);
-                        $b[$j1 + $i] = $this->insertLineMarkers($toLine, $start, $end);
+                        $a[$beginLeft + $i] = $this->insertLineMarkers($fromLine, $start, $end);
+                        $b[$beginRight + $i] = $this->insertLineMarkers($toLine, $start, $end);
                     }
                 }
             }
 
-            if ($tag !== $lastTag) {
+            if ($type !== $lastTag) {
                 $blocks[] = [
-                    'tag' => $tag,
+                    'tag' => $type,
                     'base' => [
-                        'offset' => $i1,
+                        'offset' => $beginLeft,
                         'lines' => []
                     ],
                     'changed' => [
-                        'offset' => $j1,
+                        'offset' => $beginRight,
                         'lines' => []
                     ]
                 ];
                 $lastBlock = count($blocks) - 1;
             }
 
-            $lastTag = $tag;
+            $lastTag = $type;
 
-            if ($tag === 'equal') {
-                $lines = array_slice($a, $i1, ($i2 - $i1));
+            if ($type === 'equal') {
+                $lines = array_slice($a, $beginLeft, ($endLeft - $beginLeft));
                 $blocks[$lastBlock]['base']['lines'] += $this->formatLines($lines);
-                $lines = array_slice($b, $j1, ($j2 - $j1));
+                $lines = array_slice($b, $beginRight, ($endRight - $beginRight));
                 $blocks[$lastBlock]['changed']['lines'] += $this->formatLines($lines);
             } else {
-                if ($tag === 'replace' || $tag === 'delete') {
-                    $lines = array_slice($a, $i1, ($i2 - $i1));
+                if ($type === 'replace' || $type === 'delete') {
+                    $lines = array_slice($a, $beginLeft, ($endLeft - $beginLeft));
                     $lines = $this->formatLines($lines);
                     $lines = str_replace(array("\0", "\1"), array('<del>', '</del>'), $lines);
                     $blocks[$lastBlock]['base']['lines'] += $lines;
                 }
 
-                if ($tag === 'replace' || $tag === 'insert') {
-                    $lines = array_slice($b, $j1, ($j2 - $j1));
+                if ($type === 'replace' || $type === 'insert') {
+                    $lines = array_slice($b, $beginRight, ($endRight - $beginRight));
                     $lines = $this->formatLines($lines);
                     $lines = str_replace(array("\0", "\1"), array('<ins>', '</ins>'), $lines);
                     $blocks[$lastBlock]['changed']['lines'] += $lines;
