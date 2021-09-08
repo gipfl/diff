@@ -131,7 +131,8 @@ class ArrayRenderer extends AbstractRenderer
         }
         $end = -1;
         $limit -= $start;
-        while (-$end <= $limit && $fromLine[$end] === $toLine[$end]) {
+        /** @noinspection SubStrUsedAsArrayAccessInspection $end is negative, array index needs PHP >= 7 */
+        while (-$end <= $limit && substr($fromLine, $end, 1) === substr($toLine, $end, 1)) {
             --$end;
         }
         return [
