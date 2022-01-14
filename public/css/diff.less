@@ -1,7 +1,10 @@
-@color-diff-ins: #bfb;
-@color-diff-del: #faa;
-@color-diff-changed-old: #fdd;
-@color-diff-changed-new: #efe;
+@color-diff-ins: @color-ok;
+@color-diff-del: @color-critical;
+@color-diff-changed-old: fade(@color-critical, 30%);
+@color-diff-changed-new: fade(@color-ok, 30%);
+@color-diff-green-shade-light: #dfd;
+@color-diff-pale-green: #9e9;
+@color-change-replace-del: #e99;
 
 .Differences {
   width: 100%;
@@ -44,13 +47,13 @@
       background: @gray-lighter;
     }
     td.Right {
-      background: @color-diff-ins;
+      background: @color-diff-changed-new;
     }
   }
 
   .ChangeDelete {
     td.Left {
-      background: @color-diff-del;
+      background: @color-diff-changed-old;
     }
     td.Right {
       background: @gray-lighter;
@@ -81,20 +84,20 @@
 
 .DifferencesInline .ChangeReplace .Left,
 .DifferencesInline .ChangeDelete .Left {
-  background: #fdd;
+  background: @color-diff-changed-old;
 }
 
 .DifferencesInline .ChangeReplace .Right,
 .DifferencesInline .ChangeInsert .Right {
-  background: #dfd;
+  background: @color-diff-green-shade-light;
 }
 
 .DifferencesInline .ChangeReplace ins {
-  background: #9e9;
+  background: @color-diff-pale-green;
 }
 
 .DifferencesInline .ChangeReplace del {
-  background: #e99;
+  background: @color-change-replace-del;
 }
 
 .DifferencesInline {
