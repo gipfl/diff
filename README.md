@@ -18,8 +18,18 @@ $diff = new PhpDiff(
     file_get_contents(__DIR__ . '/left.json'),
     file_get_contents(__DIR__ . '/right.json')
 );
-$this->parent->add(new SideBySideDiff($diff));
+$html->add(new SideBySideDiff($diff));
 ```
+
+Changes
+-------
+
+### v0.2.0
+
+* BREAKING: This initially didn't require Icinga Web, but now the CSS assumes
+  that there is `@color-ok` and `@color-critical`. So if using this library
+  elsewhere, you need to define such colors (green and red) accordingly.
+* FEATURE: colors adjusted to support upcoming Icinga Web dark themes
 
 Credits
 -------
