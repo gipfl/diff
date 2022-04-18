@@ -4,6 +4,7 @@
 @color-diff-changed-new: fade(@color-ok, 30%);
 @color-diff-green-shade-light: #dfd;
 @color-diff-pale-green: #9e9;
+@color-diff-text-on-diff: #051030;
 @color-change-replace-del: #e99;
 
 .Differences {
@@ -32,6 +33,7 @@
 }
 
 .Differences tbody td {
+  color: @text-color;
   width: 50%;
   .preformatted();
   word-break: break-all;
@@ -48,12 +50,14 @@
     }
     td.Right {
       background: @color-diff-changed-new;
+      color: @color-diff-text-on-diff;
     }
   }
 
   .ChangeDelete {
     td.Left {
       background: @color-diff-changed-old;
+      color: @color-diff-text-on-diff;
     }
     td.Right {
       background: @gray-lighter;
@@ -63,6 +67,7 @@
   .ChangeReplace {
     td.Left {
       background: @color-diff-changed-old;
+      color: @color-diff-text-on-diff;
       del {
         background: @color-diff-del;
       }
@@ -70,6 +75,7 @@
 
     td.Right {
       background: @color-diff-changed-new;
+      color: @color-diff-text-on-diff;
       ins {
         background: @color-diff-ins;
       }
